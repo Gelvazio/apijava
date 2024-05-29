@@ -1,11 +1,15 @@
 package bancocrudspringboot.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import bancocrudspringboot.exception.ResourceNotFoundException;
+import bancocrudspringboot.model.ConsultaPadrao;
 import bancocrudspringboot.model.Produto;
 import bancocrudspringboot.repository.ProdutoRepository;
 
@@ -23,4 +27,33 @@ public class ProdutoController {
     public List<Produto> getAll(){
         return this.produtoRepository.findAll();
     }
+
+    @PostMapping("/consultaproduto")
+	@ResponseStatus(HttpStatus.OK)
+	public List<Produto> consultaCadastro(@Validated @RequestBody ConsultaPadrao cadastro) throws ResourceNotFoundException {
+
+		String campoUsuario = cadastro.getCampo();
+		List<Produto> listaProduto = new ArrayList<>();
+
+		switch (campoUsuario) {
+            case "id":
+                Produto produto = produtoRepository.findById(Long.parseLong(cadastro.getValor1()))
+                        .orElseThrow(() -> new ResourceNotFoundException("Registro não encontrado para o ID :: " + cadastro.getValor1()));
+
+                listaProduto.add(produto);
+				break;
+            // case "email":
+			// 	listaUsuario = this.usuarioRepository.findUsuarioByEmail(cadastro.getValor1());
+			// 	break;
+            // case "nome":
+			// 	listaUsuario = this.usuarioRepository.findUsuarioByNome(cadastro.getValor1());
+			// 	break;
+			default:
+            // implementar campo nao existente
+            // listaProduto.orElseThrow(() ->  new ResourceNotFoundException("Campo inexistente na tabela do banco de dados!" + cadastro.getCampo()));
+			break;
+        }
+
+		return listaProduto;
+	}
 }
